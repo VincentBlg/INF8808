@@ -9,7 +9,11 @@
  */
 export function cleanNames (data) {
   // TODO: Clean the player name data
-  return []
+  data.forEach(value => {
+    // eslint-disable-next-line no-unused-expressions
+    value.Player = value.Player.charAt(0).toUpperCase() + value.Player.slice(1).toLowerCase()
+  })
+  return data
 }
 
 /**
@@ -20,7 +24,18 @@ export function cleanNames (data) {
  */
 export function getTopPlayers (data) {
   // TODO: Find the five top players with the most lines in the play
-  return []
+  var players = ['Richmond', 'Sampson', 'Gregory', 'Abraham', 'Benvolio', 'Tybalt', 'First citizen', 'Capulet', 'Lady capulet', 'Montague', 'Lady montague', 'Prince', 'Romeo', 'Paris', 'Servant', 'Nurse', 'Juliet', 'Mercutio', 'First servant', 'Second servant', 'Second capulet', 'Chorus', 'Friar laurence', 'Peter', 'Lady  capulet', 'First musician', 'Second musician', 'Musician', 'Third musician', 'Balthasar', 'Apothecary', 'Friar john', 'Page', 'First watchman', 'Second watchman', 'Third watchman']
+  var dict = {}
+
+  players.forEach((p) => { dict[p] = 0 })
+  data.forEach(value => {
+    // eslint-disable-next-line no-unused-expressions
+    dict[value.Player] += 1
+  })
+
+  const keysSorted = Object.keys(dict).sort(function (a, b) { return dict[a] - dict[b] })
+
+  return keysSorted.slice(-5)
 }
 
 /**
@@ -48,7 +63,26 @@ export function getTopPlayers (data) {
  */
 export function summarizeLines (data) {
   // TODO : Generate the data structure as defined above
-  return []
+  const acts = [1, 2, 3, 4, 5]
+  const players = ['Richmond', 'Sampson', 'Gregory', 'Abraham', 'Benvolio', 'Tybalt', 'First citizen', 'Capulet', 'Lady capulet', 'Montague', 'Lady montague', 'Prince', 'Romeo', 'Paris', 'Servant', 'Nurse', 'Juliet', 'Mercutio', 'First servant', 'Second servant', 'Second capulet', 'Chorus', 'Friar laurence', 'Peter', 'Lady  capulet', 'First musician', 'Second musician', 'Musician', 'Third musician', 'Balthasar', 'Apothecary', 'Friar john', 'Page', 'First watchman', 'Second watchman', 'Third watchman']
+  var output = []
+
+  acts.forEach(act => {
+    var actObject = {
+      Act: act,
+      Players: []
+    }
+
+    players.forEach(p => {
+      var count = data.filter(element => parseInt(element.Act) === act)
+        .filter(element => element.Player === p)
+        .length
+      actObject.Players.push({ Player: p, Count: count })
+    })
+
+    output.push(actObject)
+  })
+  return output
 }
 
 /**
@@ -64,5 +98,22 @@ export function replaceOthers (data, top) {
   // TODO : For each act, sum the lines uttered by players not in the top 5 for the play
   // and replace these players in the data structure by a player with name 'Other' and
   // a line count corresponding to the sum of lines
-  return []
+  const realOutput = []
+  data.forEach(element => {
+    const output = {}
+    output.Act = element.Act
+    output.Players = []
+    let counter = 0
+    element.Players.forEach(player => {
+      if (!top.includes(player.Player)) {
+        counter += player.Count
+      } else {
+        output.Players.push(player)
+      }
+    })
+    output.Players.push({ Player: 'Other', Count: counter })
+    realOutput.push(output)
+  })
+  console.log(realOutput)
+  return realOutput
 }

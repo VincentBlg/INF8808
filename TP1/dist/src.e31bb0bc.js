@@ -136,9 +136,30 @@ exports.replaceOthers = replaceOthers;
  * @param {object[]} data The dataset with unsanitized names
  * @returns {object[]} The dataset with properly capitalized names
  */
+
+/**
+ * @param d
+ */
+function convertPropsToLowerCase(d) {
+  Object.keys(d).forEach(function (origProp) {
+    var lowerCaseProp = origProp.toLocaleLowerCase(); // if the uppercase and the original property name differ
+    // save the value associated with the original prop
+    // into the lowercase prop and delete the original one
+  });
+  return d;
+}
+/**
+ * @param data
+ */
+
+
 function cleanNames(data) {
   // TODO: Clean the player name data
-  return [];
+  data.forEach(function (value) {
+    // eslint-disable-next-line no-unused-expressions
+    value.Player = value.Player.charAt(0).toUpperCase() + value.Player.slice(1).toLowerCase();
+  });
+  return data;
 }
 /**
  * Finds the names of the 5 players with the most lines in the play.
@@ -150,7 +171,19 @@ function cleanNames(data) {
 
 function getTopPlayers(data) {
   // TODO: Find the five top players with the most lines in the play
-  return [];
+  var players = ['Richmond', 'Sampson', 'Gregory', 'Abraham', 'Benvolio', 'Tybalt', 'First citizen', 'Capulet', 'Lady capulet', 'Montague', 'Lady montague', 'Prince', 'Romeo', 'Paris', 'Servant', 'Nurse', 'Juliet', 'Mercutio', 'First servant', 'Second servant', 'Second capulet', 'Chorus', 'Friar laurence', 'Peter', 'Lady  capulet', 'First musician', 'Second musician', 'Musician', 'Third musician', 'Balthasar', 'Apothecary', 'Friar john', 'Page', 'First watchman', 'Second watchman', 'Third watchman'];
+  var dict = {};
+  players.forEach(function (p) {
+    dict[p] = 0;
+  });
+  data.forEach(function (value) {
+    // eslint-disable-next-line no-unused-expressions
+    dict[value.Player] += 1;
+  });
+  var keysSorted = Object.keys(dict).sort(function (a, b) {
+    return dict[a] - dict[b];
+  });
+  return keysSorted.slice(-5);
 }
 /**
  * Transforms the data by nesting it, grouping by act and then by player, indicating the line count
@@ -179,7 +212,28 @@ function getTopPlayers(data) {
 
 function summarizeLines(data) {
   // TODO : Generate the data structure as defined above
-  return [];
+  var acts = [1, 2, 3, 4, 5];
+  var players = ['Richmond', 'Sampson', 'Gregory', 'Abraham', 'Benvolio', 'Tybalt', 'First citizen', 'Capulet', 'Lady capulet', 'Montague', 'Lady montague', 'Prince', 'Romeo', 'Paris', 'Servant', 'Nurse', 'Juliet', 'Mercutio', 'First servant', 'Second servant', 'Second capulet', 'Chorus', 'Friar laurence', 'Peter', 'Lady  capulet', 'First musician', 'Second musician', 'Musician', 'Third musician', 'Balthasar', 'Apothecary', 'Friar john', 'Page', 'First watchman', 'Second watchman', 'Third watchman'];
+  var output = [];
+  acts.forEach(function (act) {
+    var actObject = {
+      Act: act,
+      Players: []
+    };
+    players.forEach(function (p) {
+      var count = data.filter(function (element) {
+        return parseInt(element.Act) === act;
+      }).filter(function (element) {
+        return element.Player === p;
+      }).length;
+      actObject.Players.push({
+        Player: p,
+        Count: count
+      });
+    });
+    output.push(actObject);
+  });
+  return output;
 }
 /**
  * For each act, replaces the players not in the top 5 with a player named 'Other',
@@ -193,10 +247,29 @@ function summarizeLines(data) {
 
 
 function replaceOthers(data, top) {
-  // TODO : For each act, sum the lines uttered by players not in the top 5 for the play
+  var realOutput = [];
+  data.forEach(function (element) {
+    var output = {};
+    output.Act = element.Act;
+    output.Players = [];
+    var counter = 0;
+    element.Players.forEach(function (player) {
+      if (!top.includes(player.Player)) {
+        counter += player.Count;
+      } else {
+        output.Players.push(player);
+      }
+    });
+    output.Players.push({
+      Player: 'Other',
+      Count: counter
+    });
+    realOutput.push(output);
+  }); // TODO : For each act, sum the lines uttered by players not in the top 5 for the play
   // and replace these players in the data structure by a player with name 'Other' and
   // a line count corresponding to the sum of lines
-  return [];
+
+  return realOutput;
 }
 },{}],"scripts/viz.js":[function(require,module,exports) {
 "use strict";
@@ -2892,7 +2965,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61255" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62968" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
